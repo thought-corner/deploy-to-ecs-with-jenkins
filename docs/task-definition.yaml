@@ -1,0 +1,38 @@
+# ECS Task Definition (Fargate / nginx)
+# 배포: aws ecs register-task-definition --cli-input-yaml file://docs/task-definition.yaml
+
+# 이 태스크가 실행될 인프라 종류. FARGATE = 서버리스(EC2 관리 불필요)
+requiresCompatibilities:
+  - FARGATE
+
+# 태스크 정의 그룹 이름. 같은 family로 등록하면 revision(:1, :2 …)이 누적됨
+family: ECSDeploy-TaskDefinition-Prod
+
+# 이 태스크 안에서 실행할 컨테이너 목록 (하나 이상)
+containerDefinitions:
+  - name: ecsdeploy                 # 컨테이너 식별 이름 (로그/네트워크에서 이 이름으로 참조)
+    image: <AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/ecsdeploy:latest  # 우리 앱 ECR 이미지
+    portMappings:
+      - name: ecsdeploy-8080        # 포트 매핑 식별용 이름(선택)
+        containerPort: 8080         # 스프링 부트 기본 포트
+        hostPort: 8080              # awsvpc 모드에선 containerPort와 반드시 동일
+        protocol: tcp               # 전송 프로토콜
+        appProtocol: http           # 애플리케이션 계층 프로토콜 힌트 (Service Connect용)
+    essential: true                 # true = 이 컨테이너 종료 시 태스크 전체 중지
+
+# 태스크에 붙일 볼륨(공유 스토리지). 현재 없음
+volumes: []
+
+# Fargate 필수 모드. 태스크마다 자체 ENI + 사설 IP 부여
+networkMode: awsvpc
+
+# 태스크 전체 메모리 (MiB). 512 = 0.5 GB
+memory: "512"
+
+# 태스크 전체 CPU (units). 256 = 0.25 vCPU
+# ※ cpu/memory는 정해진 조합만 허용: 256 CPU → 512 / 1024 / 2048 MiB
+cpu: "256"
+
+# ECS 에이전트가 ECR 이미지 pull / CloudWatch 로그 전송 시 사용하는 IAM 역할
+# ⚠️ 빈 값이면 등록·실행 실패. 배포 전 ecsTaskExecutionRole ARN을 반드시 채울 것
+executionRoleArn: ""
