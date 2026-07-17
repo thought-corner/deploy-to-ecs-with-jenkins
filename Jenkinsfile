@@ -12,8 +12,8 @@ pipeline {
         // ECR 리포지토리 이름 (미리 create-repository로 생성돼 있어야 함)
         ECR_REPO     = 'ecsdeploy'
         // 배포 대상 ECS 클러스터 / 서비스 이름 (콘솔에서 만든 실제 이름과 일치해야 함)
-        ECS_CLUSTER  = 'ecsdeploy-cluster'
-        ECS_SERVICE  = 'ecsdeploy-service'
+        ECS_CLUSTER  = 'ecs-cluster'
+        ECS_SERVICE  = 'ECSDeploy-TaskDefinition-Prod-service-prod'
         // 빌드마다 고유한 이미지 태그. 젠킨스 빌드 번호를 사용해 버전 추적 가능
         IMAGE_TAG    = "${env.BUILD_NUMBER}"
     }
