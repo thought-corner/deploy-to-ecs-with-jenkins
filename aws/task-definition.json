@@ -21,5 +21,9 @@
   "networkMode": "awsvpc",
   "memory": "512",
   "cpu": "256",
+  "runtimePlatform": {
+    "cpuArchitecture": "ARM64",
+    "operatingSystemFamily": "LINUX"
+  },
   "executionRoleArn": "arn:aws:iam::010526243782:role/ecsTaskExecutionRole"
 }
