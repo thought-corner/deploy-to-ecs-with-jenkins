@@ -66,30 +66,32 @@ pipeline {
             }
         }
 
-        // 3) task-definition 새 리비전 등록 후 서비스에 반영해 새 컨테이너로 교체
+        // 3) 이번 빌드 이미지 태그를 task-definition에 주입 → 새 리비전 등록 → 그 리비전으로 배포
+        //    ※ 이 단계는 Jenkins 노드에서 실행되므로 노드에 aws CLI + jq가 설치돼 있어야 함
         stage('Deploy to ECS') {
-            agent {
-                docker {
-                    image 'amazon/aws-cli'          // aws CLI가 내장된 공식 이미지
-                    reuseNode true
-                    args "--entrypoint=''"          // 이미지 기본 entrypoint(aws) 무력화 → sh로 여러 명령 실행
-                }
-            }
+            agent any
             steps {
                 withCredentials([usernamePassword(credentialsId: 'my-aws', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
-                        aws --version
+                        # 이번 빌드로 push한 이미지 주소 (버전 추적용 빌드번호 태그)
+                        IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
 
-                        # task-definition.json 내용으로 새 리비전 등록
-                        aws ecs register-task-definition \
-                          --cli-input-json file://aws/task-definition.json
+                        # jq로 task-definition의 image 필드를 이번 빌드 태그로 교체
+                        jq --arg IMAGE "$IMAGE" \
+                          '.containerDefinitions[0].image = $IMAGE' \
+                          aws/task-definition.json > task-def-rendered.json
 
-                        # 서비스를 최신 task-definition으로 갱신하고 강제 재배포
-                        # --force-new-deployment: 이미지 태그가 같아도(:latest) 새로 pull해 롤링 교체
+                        # 교체된 정의로 새 리비전 등록하고, 등록된 리비전 ARN을 캡처
+                        TASK_DEF_ARN=$(aws ecs register-task-definition \
+                          --cli-input-json file://task-def-rendered.json \
+                          --query 'taskDefinition.taskDefinitionArn' --output text)
+                        echo "등록된 task definition: $TASK_DEF_ARN"
+
+                        # 정확히 그 리비전으로 서비스 롤링 배포 (버전 고정 → 롤백 용이)
                         aws ecs update-service \
                           --cluster $ECS_CLUSTER \
                           --service $ECS_SERVICE \
-                          --task-definition ECSDeploy-TaskDefinition-Prod \
+                          --task-definition "$TASK_DEF_ARN" \
                           --force-new-deployment
                     '''
                 }

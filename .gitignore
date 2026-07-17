@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Jenkins 배포 단계에서 jq로 생성하는 임시 파일 ###
+task-def-rendered.json
