@@ -1,0 +1,25 @@
+{
+  "requiresCompatibilities": ["FARGATE"],
+  "family": "ECSDeploy-TaskDefinition-Prod",
+  "containerDefinitions": [
+    {
+      "name": "ecsdeploy",
+      "image": "010526243782.dkr.ecr.ap-northeast-2.amazonaws.com/ecsdeploy:latest",
+      "portMappings": [
+        {
+          "name": "ecsdeploy-8080",
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true
+    }
+  ],
+  "volumes": [],
+  "networkMode": "awsvpc",
+  "memory": "512",
+  "cpu": "256",
+  "executionRoleArn": "arn:aws:iam::010526243782:role/ecsTaskExecutionRole"
+}
