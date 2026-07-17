@@ -66,4 +66,15 @@
 
 * [register-task-definition - AWS CLI 2.34.21 Command Reference](https://docs.aws.amazon.com/cli/latest/reference/ecs/register-task-definition.html)
 
-## 
+## [JSON 프로세서 jq](https://jqlang.org/manual/)
+
+- jq는 커맨드라인용 JSON 프로세서이다.
+- jq는 아주 간단한 문법으로 JSON 구조를 탐색하고 필터링하고 수정할 수 있도록 도와준다.
+- 특정값을 추출하거나 데이터를 변환하는 등의 다양한 작업을 수행할 수 있다.
+
+## AWS 대기 명령 services-stable
+
+- Jenkins 파일을 빌드해보면 몇 초 이내에 서비스가 update 되는 것을 확인할 수 있다.
+- 하지만 실제로 AWS에서는 서비스를 update 한 이후에 실제 프로젝트가 안정적으로 배포되기 위해서는 일정 시간을 기다려야 한다.
+- 만약 우리의 Jenkins 파일에서 테스트와 같은 다음 작업이 있는 경우 바로 그 작업으로 넘어가지 않고 충분히 대기를 시켰다가 AWS 프로젝트가 안정적으로 배포되면 다음 단게로 넘어가는 것이 좋다.
+- [services-stable - AWS CLI 2.34.21 Command Reference](https://docs.aws.amazon.com/cli/latest/reference/ecs/wait/services-stable.html#services-stable)

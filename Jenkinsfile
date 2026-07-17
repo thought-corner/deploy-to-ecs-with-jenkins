@@ -93,6 +93,13 @@ pipeline {
                           --service $ECS_SERVICE \
                           --task-definition "$TASK_DEF_ARN" \
                           --force-new-deployment
+
+                        # 새 배포가 안정 상태(원하는 태스크 수 실행 + 롤링 완료)가 될 때까지 대기
+                        # 새 태스크가 기동에 실패하면 여기서 non-zero로 빠져 젠킨스 잡이 실패 처리됨
+                        # (기본 타임아웃: 15초 간격 × 40회 = 최대 약 10분)
+                        aws ecs wait services-stable \
+                          --cluster $ECS_CLUSTER \
+                          --services $ECS_SERVICE
                     '''
                 }
             }
